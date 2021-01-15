@@ -2,29 +2,37 @@ package com.testdemo.ui.fragment
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialElevationScale
+import com.testdemo.MainFragmentView
 import com.testdemo.R
-import com.testdemo.States
 import com.testdemo.adapter.MainAdapter
 import com.testdemo.databinding.FragmentMainBinding
-import com.testdemo.viewmodel.MainViewModel
+import com.testdemo.model.UserModel
+import com.testdemo.presenter.MainPresenter
+import moxy.MvpAppCompatFragment
+import moxy.presenter.InjectPresenter
 
-class MainFragment : Fragment(R.layout.fragment_main) {
+class MainFragment : MvpAppCompatFragment(), MainFragmentView {
 
     private lateinit var vb: FragmentMainBinding
-    private val vm: MainViewModel by activityViewModels()
+    @InjectPresenter
+    lateinit var vm: MainPresenter
     private var adapter: MainAdapter? = null
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_main, container, false)
+    }
 
     @SuppressLint("CheckResult")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -52,21 +60,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             recyclerView.adapter = adapter
         }
 
-        vm.data.observe(viewLifecycleOwner, {
-            vb.progress.visibility = GONE
-            when (it) {
-                is States.Success -> {
-                    adapter?.setData(ArrayList(it.users))
-                }
-                is States.Loading -> {
-                    vb.progress.visibility = VISIBLE
-                }
-                is States.Error -> {
-                    Snackbar.make(view, it.message, Snackbar.LENGTH_LONG).show()
-                }
-            }
-        })
-
         if (adapter?.itemCount == 0) {
             vm.getUsers(0)
         }
@@ -86,15 +79,17 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         })
     }
 
-    override fun onPause() {
-        super.onPause()
-
-        vm.recyclerState = vb.recyclerView.layoutManager?.onSaveInstanceState()
+    override fun showError(message: String) {
+        vb.progress.visibility = GONE
+        Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show()
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onDataReceived(data: ArrayList<UserModel>) {
+        vb.progress.visibility = GONE
+        adapter?.setData(ArrayList(data))
+    }
 
-        vb.recyclerView.layoutManager?.onRestoreInstanceState(vm.recyclerState)
+    override fun showLoading() {
+        vb.progress.visibility = VISIBLE
     }
 }

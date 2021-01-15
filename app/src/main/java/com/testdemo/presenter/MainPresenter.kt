@@ -1,22 +1,21 @@
-package com.testdemo.viewmodel
+package com.testdemo.presenter
 
 import android.annotation.SuppressLint
-import android.os.Parcelable
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.testdemo.States
+import com.testdemo.MainFragmentView
 import com.testdemo.api.ApiService
 import com.testdemo.model.UserModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import moxy.InjectViewState
+import moxy.MvpPresenter
+import moxy.presenterScope
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
-class MainViewModel : ViewModel(), KoinComponent {
-    val data = MutableLiveData<States>()
+@InjectViewState
+class MainPresenter : MvpPresenter<MainFragmentView>(), KoinComponent {
     private val cache = arrayListOf<UserModel>()
     private val apiService: ApiService by inject()
-    var recyclerState: Parcelable? = null
     private var itemsLoaded = 0
     private var pageSize = 0
     private var isLoading = false
@@ -27,13 +26,13 @@ class MainViewModel : ViewModel(), KoinComponent {
     fun getUsers(offset: Int) {
 
         if (cache.isNotEmpty() && offset < itemsLoaded) {
-            data.value = States.Success(cache)
+            viewState.onDataReceived(cache)
             return
         }
 
         if (isLoading || isEnd) return
 
-        if (cache.isEmpty()) data.value = States.Loading()
+        if (cache.isEmpty()) viewState.showLoading()
 
         isLoading = true
 
@@ -41,7 +40,7 @@ class MainViewModel : ViewModel(), KoinComponent {
     }
 
     private fun fetchUsers() {
-        viewModelScope.launch(Dispatchers.IO) {
+        presenterScope.launch(Dispatchers.IO) {
             try {
                 val result = apiService.fetchData(since)
 
@@ -56,11 +55,15 @@ class MainViewModel : ViewModel(), KoinComponent {
                     }
 
                     cache.addAll(it)
-                    data.postValue(States.Success(it))
+                    launch(Dispatchers.Main) {
+                        viewState.onDataReceived(ArrayList(it))
+                    }
                 }
             } catch (e: Exception) {
                 isEnd = true
-                data.postValue(States.Error(e.message ?: ""))
+                launch(Dispatchers.Main) {
+                    viewState.showError(e.message ?: "")
+                }
             }
         }
     }
