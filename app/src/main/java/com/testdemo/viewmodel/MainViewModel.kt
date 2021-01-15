@@ -11,7 +11,6 @@ import com.testdemo.model.UserModel
 import kotlinx.coroutines.*
 import org.koin.core.KoinComponent
 import org.koin.core.inject
-import kotlin.coroutines.CoroutineContext
 
 class MainViewModel : ViewModel(), KoinComponent {
     val data = MutableLiveData<States>()
@@ -25,9 +24,9 @@ class MainViewModel : ViewModel(), KoinComponent {
     private var since = 0
 
     @SuppressLint("CheckResult")
-    fun getUsers(forSize: Int) {
+    fun getUsers(offset: Int) {
 
-        if (cache.isNotEmpty() && forSize < itemsLoaded) {
+        if (cache.isNotEmpty() && offset < itemsLoaded) {
             data.value = States.Success(cache)
             return
         }
@@ -38,6 +37,10 @@ class MainViewModel : ViewModel(), KoinComponent {
 
         isLoading = true
 
+        fetchUsers()
+    }
+
+    private fun fetchUsers() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val result = apiService.fetchData(since)
