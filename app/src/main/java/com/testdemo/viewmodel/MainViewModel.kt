@@ -13,7 +13,7 @@ import org.koin.core.KoinComponent
 import org.koin.core.inject
 import kotlin.coroutines.CoroutineContext
 
-class MainViewModelImpl : ViewModel(), KoinComponent {
+class MainViewModel : ViewModel(), KoinComponent {
     val data = MutableLiveData<States>()
     private val cache = arrayListOf<UserModel>()
     private val apiService: ApiService by inject()

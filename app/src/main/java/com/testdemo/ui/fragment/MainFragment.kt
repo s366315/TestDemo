@@ -18,12 +18,12 @@ import com.testdemo.R
 import com.testdemo.States
 import com.testdemo.adapter.MainAdapter
 import com.testdemo.databinding.FragmentMainBinding
-import com.testdemo.viewmodel.MainViewModelImpl
+import com.testdemo.viewmodel.MainViewModel
 
 class MainFragment : Fragment(R.layout.fragment_main) {
 
     private lateinit var vb: FragmentMainBinding
-    private val vm: MainViewModelImpl by activityViewModels()
+    private val vm: MainViewModel by activityViewModels()
     private var adapter: MainAdapter? = null
 
     @SuppressLint("CheckResult")
