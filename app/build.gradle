@@ -51,7 +51,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.2'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.2'
 
-    implementation "org.koin:koin-androidx-viewmodel:2.0.1"
+    implementation "org.koin:koin-android:2.0.1"
 
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
@@ -67,6 +67,7 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
 
+    def moxy_version = "2.2.1"
     implementation "com.github.moxy-community:moxy-androidx:$moxy_version"
     implementation "com.github.moxy-community:moxy:$moxy_version"
     kapt "com.github.moxy-community:moxy-compiler:$moxy_version"

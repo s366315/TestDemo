@@ -44,20 +44,18 @@ class MainPresenter : MvpPresenter<MainFragmentView>(), KoinComponent {
             try {
                 val result = apiService.fetchData(since)
 
-                result.also {
-                    if (it.isEmpty() || it.size < pageSize) isEnd = true
-                    pageSize = it.size
-                    itemsLoaded += pageSize
-                    isLoading = false
+                if (result.isEmpty() || result.size < pageSize) isEnd = true
+                pageSize = result.size
+                itemsLoaded += pageSize
+                isLoading = false
 
-                    if (it.isNotEmpty()) {
-                        since = it.last().id
-                    }
+                if (result.isNotEmpty()) {
+                    since = result.last().id
+                }
 
-                    cache.addAll(it)
-                    launch(Dispatchers.Main) {
-                        viewState.onDataReceived(ArrayList(it))
-                    }
+                cache.addAll(result)
+                launch(Dispatchers.Main) {
+                    viewState.onDataReceived(ArrayList(result))
                 }
             } catch (e: Exception) {
                 isEnd = true
